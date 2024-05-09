@@ -1,0 +1,64 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:DOLogParser.ViewModels"
+             mc:Ignorable="d"
+             d:DesignWidth="600"
+             d:DesignHeight="450"
+             x:Class="DOLogParser.Views.LogParserView"
+             x:DataType="vm:LogParserViewModel">
+
+    <Design.DataContext>
+        <vm:LogParserViewModel />
+    </Design.DataContext>
+    <StackPanel Margin="20" Spacing="20">
+        <StackPanel Spacing="20">
+            <WrapPanel Orientation="Horizontal"
+                       DockPanel.Dock="Top">
+                <TextBox Margin="0  0 20 0"
+                         Width="300"
+                         Watermark="Ваш SID"
+                         UseFloatingWatermark="True"
+                         Text="{Binding DoSID}" />
+                <ComboBox Margin="0 0 20 0"
+                          Width="100"
+                          ItemsSource="{Binding ServersList}"
+                          SelectedItem="{Binding SelectedServer}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </WrapPanel>
+            <WrapPanel>
+                <TextBox Margin="0  0 20 0"
+                         Watermark="Начальная страница"
+                         Text="{Binding FirstPage}" />
+                <TextBox Margin="0  0 20 0"
+                         Watermark="Последнаяя страница"
+                         Text="{Binding LastPage}" />
+
+            </WrapPanel>
+            <Button Content="Search"
+                    Command="{Binding SearchCommand}">
+            </Button>
+        </StackPanel>
+
+        <ListBox ItemsSource="{Binding MatchedLogRows}"
+                 MaxHeight="300">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <WrapPanel>
+                        <TextBlock Text="{Binding Date}" Margin="5 0" />
+                        <TextBlock Text="{Binding Description}" Margin="5 0" />
+                        <TextBlock Text="{Binding Amount}" Margin="5 0" />
+                        <TextBlock Text="{Binding Page}" Margin="5 0" />
+                    </WrapPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+    </StackPanel>
+</UserControl>

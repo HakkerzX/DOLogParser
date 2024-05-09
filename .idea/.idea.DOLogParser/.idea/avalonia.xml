@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="DOLogParser/App.axaml" value="DOLogParser/DOLogParser.csproj" />
+        <entry key="DOLogParser/Views/LogParserView.axaml" value="DOLogParser/DOLogParser.csproj" />
+        <entry key="DOLogParser/Views/MainWindow.axaml" value="DOLogParser/DOLogParser.csproj" />
+      </map>
+    </option>
+  </component>
+</project>
