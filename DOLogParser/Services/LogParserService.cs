@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
-using Avalonia.Remote.Protocol;
 using DOLogParser.DataStructures;
 using DOLogParser.Models;
 
@@ -20,16 +16,17 @@ public class LogParserService
     {
         _server = userSettings.Server;
         _doSid = userSettings.DoSid;
+        _balanceLogUrl = $"https://{_server}.darkorbit.com/indexInternal.es?action=internalBalance&orderBy=&view=&dps=";
+        _journalLogUrl = String.Empty;
     }
 
     private static string _server;
     private string _doSid;
     private int _pageNumber;
 
-    private string _balanceLogUrl =
-        $"https://{_server}.darkorbit.com/indexInternal.es?action=internalBalance&orderBy=&view=&dps=";
+    private string _balanceLogUrl;
 
-    private string? _journalLogUrl = String.Empty;
+    private string? _journalLogUrl;
 
     public async Task<List<LogRow>> GetLogsByPage(int currentPage)
     {
@@ -50,6 +47,12 @@ public class LogParserService
 
         htmlPage = await response.Content.ReadAsStringAsync();
 
+
+        return await GetFormattedData(htmlPage, currentPage);
+    }
+
+    private async Task<List<LogRow>> GetFormattedData(string htmlPage, int currentPage)
+    {
         IBrowsingContext context = BrowsingContext.New(Configuration.Default);
         IDocument document = await context.OpenAsync(req => req.Content(htmlPage));
 
@@ -64,13 +67,11 @@ public class LogParserService
                 Date = row.QuerySelector("span.date")!.InnerHtml,
                 Description = row.QuerySelector("span.description")!.InnerHtml,
                 Amount = row.QuerySelector("span.amount")!.InnerHtml,
-                Page = $"Страница {currentPage}"
+                Page = $"pg.{currentPage}"
             };
-            
+
             logRows.Add(logRow);
         }
-
-        // var result = new List<string>();
 
         return logRows;
     }

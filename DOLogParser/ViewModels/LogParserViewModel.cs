@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,11 +21,10 @@ public class LogParserViewModel : ViewModelBase
     {
         SelectedServer = ServersList[0];
         
-        SearchCommand = ReactiveCommand.CreateFromTask((() =>
+        SearchCommand = ReactiveCommand.CreateFromTask( async () =>
         {
-            SearchInLogs();
-            return Task.CompletedTask;
-        }));
+            await Task.Run(SearchInLogs);
+        });
     }
 
     public ReactiveCommand<Unit, Unit> SearchCommand { get; }
@@ -46,7 +44,7 @@ public class LogParserViewModel : ViewModelBase
             var logs = await logParserService.GetLogsByPage(currentPage);
             
             Thread.Sleep(1000);
-            // Debug.WriteLine("New Row from SearchInLogs");
+
             MatchedLogRows.Add(logs);
         }
 
