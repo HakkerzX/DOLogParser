@@ -19,12 +19,19 @@ public class LogParserViewModel : ViewModelBase
 
     public LogParserViewModel()
     {
-        SelectedServer = ServersList[0];
-        
-        SearchCommand = ReactiveCommand.CreateFromTask( async () =>
+        LogRow testData = new LogRow()
         {
-            await Task.Run(SearchInLogs);
-        });
+            Date = "test",
+            Amount = "test",
+            Description = "test",
+            Page = "pg.0"
+        };
+        MatchedLogRows = new ObservableCollection<LogRow> {testData};
+        
+        
+        SelectedServer = ServersList[0];
+
+        SearchCommand = ReactiveCommand.CreateFromTask(async () => { await Task.Run(SearchInLogs); });
     }
 
     public ReactiveCommand<Unit, Unit> SearchCommand { get; }
@@ -33,7 +40,7 @@ public class LogParserViewModel : ViewModelBase
     {
         var userSettings = new UserSettings()
         {
-            DoSid =  DoSID,
+            DoSid = DoSID,
             Server = SelectedServer,
         };
 
@@ -42,21 +49,19 @@ public class LogParserViewModel : ViewModelBase
         for (int currentPage = Convert.ToInt32(FirstPage); currentPage <= Convert.ToInt32(LastPage); currentPage++)
         {
             var logs = await logParserService.GetLogsByPage(currentPage);
-            
+
             Thread.Sleep(1000);
 
             MatchedLogRows.Add(logs);
         }
-
     }
 
-    public ObservableCollection<LogRow> MatchedLogRows { get; set; } = new();
+    public ObservableCollection<LogRow> MatchedLogRows { get; }
 
-    public ObservableCollection<string> ServersList { get; } = new ObservableCollection<string>
-        { "ru1", "ru2", "ru3", "ru4", "ru5" };
+    public ObservableCollection<string> ServersList { get; } = new() { "ru1", "ru2", "ru3", "ru4", "ru5" };
 
     public string FirstPage { get; set; } = "1";
-    public string LastPage { get; set; } = 2.ToString();
+    public string LastPage { get; set; } = "2";
 
     public string SelectedServer
     {

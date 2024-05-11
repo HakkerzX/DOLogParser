@@ -17,7 +17,7 @@ public class LogParserService
         _server = userSettings.Server;
         _doSid = userSettings.DoSid;
         _balanceLogUrl = $"https://{_server}.darkorbit.com/indexInternal.es?action=internalBalance&orderBy=&view=&dps=";
-        _journalLogUrl = String.Empty;
+        _historyLogUrl = String.Empty;
     }
 
     private static string _server;
@@ -25,8 +25,7 @@ public class LogParserService
     private int _pageNumber;
 
     private string _balanceLogUrl;
-
-    private string? _journalLogUrl;
+    private string? _historyLogUrl;
 
     public async Task<List<LogRow>> GetLogsByPage(int currentPage)
     {
@@ -34,8 +33,7 @@ public class LogParserService
 
 
         var httpClient = new HttpClient();
-        string url =
-            $"https://{_server}.darkorbit.com/indexInternal.es?action=internalBalance&orderBy=&view=&dps={currentPage}";
+        string url = $"{_balanceLogUrl}{currentPage}";
 
         httpClient.DefaultRequestHeaders.Add(nameof(Cookie), $"dosid={_doSid}");
         httpClient.DefaultRequestHeaders.Add("Accept-Charset", "windows-1251,utf-8;q=0.7,*;q=0.3");
@@ -47,11 +45,10 @@ public class LogParserService
 
         htmlPage = await response.Content.ReadAsStringAsync();
 
-
-        return await GetFormattedData(htmlPage, currentPage);
+        return await GetFormattedBalanceData(htmlPage, currentPage);
     }
 
-    private async Task<List<LogRow>> GetFormattedData(string htmlPage, int currentPage)
+    private async Task<List<LogRow>> GetFormattedBalanceData(string htmlPage, int currentPage)
     {
         IBrowsingContext context = BrowsingContext.New(Configuration.Default);
         IDocument document = await context.OpenAsync(req => req.Content(htmlPage));

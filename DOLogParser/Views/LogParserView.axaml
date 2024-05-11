@@ -12,17 +12,18 @@
     <Design.DataContext>
         <vm:LogParserViewModel />
     </Design.DataContext>
-    <StackPanel Margin="20" Spacing="20">
-        <StackPanel Spacing="20">
-            <WrapPanel Orientation="Horizontal"
-                       DockPanel.Dock="Top">
+    <DockPanel Margin="10">
+        <StackPanel Spacing="10" DockPanel.Dock="Top">
+            <WrapPanel Orientation="Horizontal">
                 <TextBox Margin="0  0 20 0"
                          Width="300"
                          Watermark="Ваш SID"
                          UseFloatingWatermark="True"
+                         PasswordChar="*"
                          Text="{Binding DoSID}" />
                 <ComboBox Margin="0 0 20 0"
                           Width="100"
+                          MaxDropDownHeight="150"
                           ItemsSource="{Binding ServersList}"
                           SelectedItem="{Binding SelectedServer}">
                     <ComboBox.ItemTemplate>
@@ -47,18 +48,24 @@
         </StackPanel>
 
         <ListBox ItemsSource="{Binding MatchedLogRows}"
-                 MaxHeight="300">
+                 Margin="0 5 0 0"
+                 Background="Transparent"
+                 CornerRadius="5"
+                 DockPanel.Dock="Bottom">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <WrapPanel>
-                        <TextBlock Text="{Binding Date}" Margin="5 0" />
-                        <TextBlock Text="{Binding Description}" Margin="5 0" />
-                        <TextBlock Text="{Binding Amount}" Margin="5 0" />
-                        <TextBlock Text="{Binding Page}" Margin="5 0" />
+                        <TextBlock Text="{Binding Date}"
+                                   Margin="5 0" />
+                        <TextBlock Text="{Binding Description}"
+                                   Margin="5 0" />
+                        <TextBlock Text="{Binding Amount}"
+                                   Margin="5 0" />
+                        <TextBlock Text="{Binding Page}"
+                                   Margin="5 0" />
                     </WrapPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-
-    </StackPanel>
+    </DockPanel>
 </UserControl>

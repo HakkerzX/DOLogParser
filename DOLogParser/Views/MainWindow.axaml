@@ -29,7 +29,7 @@
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
 
-        <Panel Margin="40">
+        <Panel Margin="20">
             <ContentControl Content="{Binding LogParserViewModel}" />
         </Panel>
     </Panel>
