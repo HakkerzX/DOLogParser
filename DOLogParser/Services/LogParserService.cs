@@ -29,11 +29,18 @@ public class LogParserService
 
     public async Task<List<LogRow>> GetLogsByPage(int currentPage)
     {
-        string htmlPage = String.Empty;
-
-
-        var httpClient = new HttpClient();
         string url = $"{_balanceLogUrl}{currentPage}";
+
+        var htmlPage = await GetHtmlPage(url);
+
+        var logs = await GetFormattedBalanceData(htmlPage, currentPage);
+
+        return logs;
+    }
+
+    private async Task<string> GetHtmlPage(string url)
+    {
+        var httpClient = new HttpClient();
 
         httpClient.DefaultRequestHeaders.Add(nameof(Cookie), $"dosid={_doSid}");
         httpClient.DefaultRequestHeaders.Add("Accept-Charset", "windows-1251,utf-8;q=0.7,*;q=0.3");
@@ -43,9 +50,9 @@ public class LogParserService
         HttpResponseMessage response = await httpClient.GetAsync(url);
         response.EnsureSuccessStatusCode();
 
-        htmlPage = await response.Content.ReadAsStringAsync();
+        string htmlPage = await response.Content.ReadAsStringAsync();
 
-        return await GetFormattedBalanceData(htmlPage, currentPage);
+        return htmlPage;
     }
 
     private async Task<List<LogRow>> GetFormattedBalanceData(string htmlPage, int currentPage)
@@ -69,6 +76,8 @@ public class LogParserService
 
             logRows.Add(logRow);
         }
+        
+        logRows.RemoveAt(0);
 
         return logRows;
     }

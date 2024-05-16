@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,9 @@ public class LogParserViewModel : ViewModelBase
     private string _selectedServer = String.Empty;
     private string _dosid = String.Empty;
 
+    private string _firstPage;
+    private string _lastPage;
+
 
     public LogParserViewModel()
     {
@@ -26,12 +30,34 @@ public class LogParserViewModel : ViewModelBase
             Description = "test",
             Page = "pg.0"
         };
-        MatchedLogRows = new ObservableCollection<LogRow> {testData};
-        
-        
-        SelectedServer = ServersList[0];
+        MatchedLogRows = new ObservableCollection<LogRow> { testData };
 
-        SearchCommand = ReactiveCommand.CreateFromTask(async () => { await Task.Run(SearchInLogs); });
+        _firstPage = "1";
+        _lastPage = "1";
+
+        this.WhenAnyValue(x => x.FirstPage)
+            .Subscribe(text =>
+            {
+                if (!string.IsNullOrEmpty(text) && !text.All(char.IsDigit))
+                {
+                    FirstPage = new string(text.Where(char.IsDigit).ToArray());
+                }
+            });
+        this.WhenAnyValue(x => x.LastPage)
+            .Subscribe(text =>
+            {
+                if (!string.IsNullOrEmpty(text) && !text.All(char.IsDigit))
+                {
+                    LastPage = new string(text.Where(char.IsDigit).ToArray());
+                }
+            });
+
+        SelectedServer = ServersList[0];
+        var isValidObservable = this.WhenAnyValue(
+            x => x.DoSID,
+            x => !string.IsNullOrWhiteSpace(x));
+        SearchCommand =
+            ReactiveCommand.CreateFromTask(async () => { await Task.Run(SearchInLogs); }, isValidObservable);
     }
 
     public ReactiveCommand<Unit, Unit> SearchCommand { get; }
@@ -44,15 +70,17 @@ public class LogParserViewModel : ViewModelBase
             Server = SelectedServer,
         };
 
-        var logParserService = new LogParserService(userSettings);
+        var logParser = new LogParserService(userSettings);
 
         for (int currentPage = Convert.ToInt32(FirstPage); currentPage <= Convert.ToInt32(LastPage); currentPage++)
         {
-            var logs = await logParserService.GetLogsByPage(currentPage);
+            var logs = await logParser.GetLogsByPage(currentPage);
+
+            var result = logs.Where(x => x.Description.Contains(""));
+
+            MatchedLogRows.Add(result);
 
             Thread.Sleep(1000);
-
-            MatchedLogRows.Add(logs);
         }
     }
 
@@ -60,8 +88,17 @@ public class LogParserViewModel : ViewModelBase
 
     public ObservableCollection<string> ServersList { get; } = new() { "ru1", "ru2", "ru3", "ru4", "ru5" };
 
-    public string FirstPage { get; set; } = "1";
-    public string LastPage { get; set; } = "2";
+    public string FirstPage
+    {
+        get => _firstPage;
+        set => this.RaiseAndSetIfChanged(ref _firstPage, value);
+    }
+
+    public string LastPage
+    {
+        get => _lastPage;
+        set => this.RaiseAndSetIfChanged(ref _lastPage, value);
+    }
 
     public string SelectedServer
     {
