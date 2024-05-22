@@ -20,6 +20,8 @@ public class LogParserViewModel : ViewModelBase
     private string _firstPage;
     private string _lastPage;
 
+    private bool _historyIsChecked;
+    private bool _balanceIsChecked;
 
     public LogParserViewModel()
     {
@@ -56,11 +58,16 @@ public class LogParserViewModel : ViewModelBase
         var isValidObservable = this.WhenAnyValue(
             x => x.DoSID,
             x => !string.IsNullOrWhiteSpace(x));
-        SearchCommand =
-            ReactiveCommand.CreateFromTask(async () => { await Task.Run(SearchInLogs); }, isValidObservable);
+        SearchCommand = ReactiveCommand.CreateFromTask(async () => { await Task.Run(SearchInLogs); }
+            , isValidObservable);
+        SelectHistoryCommand = ReactiveCommand.Create(() => { SelectHistory(); });
+        SelectBalanceCommand = ReactiveCommand.Create(() => { SelectBalance(); });
     }
 
     public ReactiveCommand<Unit, Unit> SearchCommand { get; }
+    public ReactiveCommand<Unit, Unit> SelectHistoryCommand { get; }
+    public ReactiveCommand<Unit, Unit> SelectBalanceCommand { get; }
+
 
     private async void SearchInLogs()
     {
@@ -83,6 +90,19 @@ public class LogParserViewModel : ViewModelBase
             Thread.Sleep(1000);
         }
     }
+
+    private void SelectHistory()
+    {
+        HistoryIsChecked = true;
+        BalanceIsChecked = false;
+    }
+
+    private void SelectBalance()
+    {
+        BalanceIsChecked = true;
+        HistoryIsChecked = false;
+    }
+
 
     public ObservableCollection<LogRow> MatchedLogRows { get; }
 
@@ -110,5 +130,17 @@ public class LogParserViewModel : ViewModelBase
     {
         get => _dosid;
         set => this.RaiseAndSetIfChanged(ref _dosid, value);
+    }
+
+    public bool HistoryIsChecked
+    {
+        get => _historyIsChecked;
+        set => this.RaiseAndSetIfChanged(ref _historyIsChecked, value);
+    }
+
+    public bool BalanceIsChecked
+    {
+        get => _balanceIsChecked;
+        set => this.RaiseAndSetIfChanged(ref _balanceIsChecked, value);
     }
 }
