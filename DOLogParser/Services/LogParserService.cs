@@ -6,23 +6,28 @@ using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
 using DOLogParser.DataStructures;
+using DOLogParser.Enums;
 using DOLogParser.Models;
 
 namespace DOLogParser.Services;
 
 public class LogParserService
 {
-    public LogParserService(UserSettings userSettings)
+    public LogParserService(ParserSettings parserSettings)
     {
-        _server = userSettings.Server;
-        _doSid = userSettings.DoSid;
+        _server = parserSettings.UserSettings.Server;
+        _doSid = parserSettings.UserSettings.DoSid;
+
+        _logType = parserSettings.LogType;
+
         _balanceLogUrl = $"https://{_server}.darkorbit.com/indexInternal.es?action=internalBalance&orderBy=&view=&dps=";
         _historyLogUrl = String.Empty;
     }
 
-    private static string _server;
+    private string? _server;
     private string _doSid;
     private int _pageNumber;
+    private LogType _logType;
 
     private string _balanceLogUrl;
     private string? _historyLogUrl;
@@ -33,9 +38,17 @@ public class LogParserService
 
         var htmlPage = await GetHtmlPage(url);
 
-        var logs = await GetFormattedBalanceData(htmlPage, currentPage);
+        if (_logType == LogType.Balance)
+        {
+            return await GetFormattedBalanceData(htmlPage, currentPage);
+        }
 
-        return logs;
+        if (_logType == LogType.History)
+        {
+            return await GetFormattedHistoryData(htmlPage, currentPage);
+        }
+
+        return new List<LogRow>();
     }
 
     private async Task<string> GetHtmlPage(string url)
@@ -61,7 +74,7 @@ public class LogParserService
         IDocument document = await context.OpenAsync(req => req.Content(htmlPage));
 
         IHtmlCollection<IElement> balanceRows = document.QuerySelectorAll("li.balance_item");
-
+        
         List<LogRow> logRows = new();
         LogRow logRow;
         foreach (var row in balanceRows)
@@ -76,9 +89,14 @@ public class LogParserService
 
             logRows.Add(logRow);
         }
-        
+
         logRows.RemoveAt(0);
 
         return logRows;
+    }
+
+    private async Task<List<LogRow>> GetFormattedHistoryData(string htmlPage, int currentPage)
+    {
+        return new List<LogRow>();
     }
 }

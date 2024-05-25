@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
 using DOLogParser.DataStructures;
+using DOLogParser.Enums;
 using DOLogParser.Models;
 using DOLogParser.Services;
 using DynamicData;
@@ -15,13 +16,16 @@ namespace DOLogParser.ViewModels;
 public class LogParserViewModel : ViewModelBase
 {
     private string _selectedServer = String.Empty;
-    private string _dosid = String.Empty;
+    private string _doSid = String.Empty;
 
     private string _firstPage;
     private string _lastPage;
 
     private bool _historyIsChecked;
-    private bool _balanceIsChecked;
+    private bool _balanceIsChecked = true;
+
+    private LogType _logType;
+
 
     public LogParserViewModel()
     {
@@ -34,6 +38,7 @@ public class LogParserViewModel : ViewModelBase
         };
         MatchedLogRows = new ObservableCollection<LogRow> { testData };
 
+        _logType = LogType.Balance;
         _firstPage = "1";
         _lastPage = "1";
 
@@ -71,13 +76,10 @@ public class LogParserViewModel : ViewModelBase
 
     private async void SearchInLogs()
     {
-        var userSettings = new UserSettings()
-        {
-            DoSid = DoSID,
-            Server = SelectedServer,
-        };
+        var userSettings = new UserSettings(SelectedServer, DoSID);
+        var parserSettings = new ParserSettings(userSettings, LogType);
 
-        var logParser = new LogParserService(userSettings);
+        var logParser = new LogParserService(parserSettings);
 
         for (int currentPage = Convert.ToInt32(FirstPage); currentPage <= Convert.ToInt32(LastPage); currentPage++)
         {
@@ -95,14 +97,17 @@ public class LogParserViewModel : ViewModelBase
     {
         HistoryIsChecked = true;
         BalanceIsChecked = false;
+
+        LogType = LogType.History;
     }
 
     private void SelectBalance()
     {
         BalanceIsChecked = true;
         HistoryIsChecked = false;
-    }
 
+        LogType = LogType.History;
+    }
 
     public ObservableCollection<LogRow> MatchedLogRows { get; }
 
@@ -128,8 +133,8 @@ public class LogParserViewModel : ViewModelBase
 
     public string DoSID
     {
-        get => _dosid;
-        set => this.RaiseAndSetIfChanged(ref _dosid, value);
+        get => _doSid;
+        set => this.RaiseAndSetIfChanged(ref _doSid, value);
     }
 
     public bool HistoryIsChecked
@@ -142,5 +147,11 @@ public class LogParserViewModel : ViewModelBase
     {
         get => _balanceIsChecked;
         set => this.RaiseAndSetIfChanged(ref _balanceIsChecked, value);
+    }
+
+    public LogType LogType
+    {
+        get => _logType;
+        private set => this.RaiseAndSetIfChanged(ref _logType, value);
     }
 }
