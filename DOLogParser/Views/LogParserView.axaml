@@ -53,16 +53,16 @@
                               Margin="0 5 0 5"
                               HorizontalAlignment="Right"
                               CornerRadius="5 0 0 5"
-                              Content="History"
-                              IsChecked="{Binding HistoryIsChecked}"
-                              Command="{Binding SelectHistoryCommand}" />
+                              Content="Balance"
+                              IsChecked="{Binding BalanceIsChecked}"
+                              Command="{Binding SelectBalanceCommand}" />
                 <ToggleButton Grid.Column="2"
                               Margin="0 5 20 5"
                               HorizontalAlignment="Left"
                               CornerRadius="0 5 5 0"
-                              Content="Balance"
-                              IsChecked="{Binding BalanceIsChecked}"
-                              Command="{Binding SelectBalanceCommand}" />
+                              Content="History"
+                              IsChecked="{Binding HistoryIsChecked}"
+                              Command="{Binding SelectHistoryCommand}" />
             </Grid>
             <Button Content="Search"
                     Margin="0  5 20 5"

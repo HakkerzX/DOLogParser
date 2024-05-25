@@ -29,14 +29,7 @@ public class LogParserViewModel : ViewModelBase
 
     public LogParserViewModel()
     {
-        LogRow testData = new LogRow()
-        {
-            Date = "test",
-            Amount = "test",
-            Description = "test",
-            Page = "pg.0"
-        };
-        MatchedLogRows = new ObservableCollection<LogRow> { testData };
+        MatchedLogRows = new ObservableCollection<LogRow>();
 
         _logType = LogType.Balance;
         _firstPage = "1";
@@ -85,11 +78,20 @@ public class LogParserViewModel : ViewModelBase
         {
             var logs = await logParser.GetLogsByPage(currentPage);
 
-            var result = logs.Where(x => x.Description.Contains(""));
+            if (logs.Count > 1)
+            {
+                var result = logs.Where(x => x.Description.Contains(""));
 
-            MatchedLogRows.Add(result);
+                MatchedLogRows.Add(result);
 
-            Thread.Sleep(1000);
+                Thread.Sleep(1000);
+            }
+
+            MatchedLogRows.Add(new LogRow()
+            {
+                Description = "Не найдено"
+            });
+            return;
         }
     }
 

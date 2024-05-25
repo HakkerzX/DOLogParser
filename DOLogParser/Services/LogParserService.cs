@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using AngleSharp.Dom;
 using DOLogParser.DataStructures;
 using DOLogParser.Enums;
 using DOLogParser.Models;
+using DynamicData;
 
 namespace DOLogParser.Services;
 
@@ -34,21 +36,24 @@ public class LogParserService
 
     public async Task<List<LogRow>> GetLogsByPage(int currentPage)
     {
-        string url = $"{_balanceLogUrl}{currentPage}";
+        string url;
+        string htmlPage;
 
-        var htmlPage = await GetHtmlPage(url);
-
-        if (_logType == LogType.Balance)
+        switch (_logType)
         {
-            return await GetFormattedBalanceData(htmlPage, currentPage);
-        }
+            case LogType.Balance:
+                url = $"{_balanceLogUrl}{currentPage}";
+                htmlPage = await GetHtmlPage(url);
 
-        if (_logType == LogType.History)
-        {
-            return await GetFormattedHistoryData(htmlPage, currentPage);
-        }
+                return await GetFormattedBalanceData(htmlPage, currentPage);
+            case LogType.History:
+                url = $"{_historyLogUrl}{currentPage}";
+                htmlPage = await GetHtmlPage(url);
 
-        return new List<LogRow>();
+                return await GetFormattedHistoryData(htmlPage, currentPage);
+            default:
+                return new List<LogRow>() { new LogRow() { Description = "Не Найдено" } };
+        }
     }
 
     private async Task<string> GetHtmlPage(string url)
@@ -74,23 +79,21 @@ public class LogParserService
         IDocument document = await context.OpenAsync(req => req.Content(htmlPage));
 
         IHtmlCollection<IElement> balanceRows = document.QuerySelectorAll("li.balance_item");
-        
+
         List<LogRow> logRows = new();
-        LogRow logRow;
-        foreach (var row in balanceRows)
+
+        if (balanceRows.Length > 0)
         {
-            logRow = new LogRow()
-            {
-                Date = row.QuerySelector("span.date")!.InnerHtml,
-                Description = row.QuerySelector("span.description")!.InnerHtml,
-                Amount = row.QuerySelector("span.amount")!.InnerHtml,
-                Page = $"pg.{currentPage}"
-            };
+            logRows.AddRange(balanceRows
+                .Select(row => new LogRow()
+                {
+                    Date = row.QuerySelector("span.date")!.InnerHtml,
+                    Description = row.QuerySelector("span.description")!.InnerHtml,
+                    Amount = row.QuerySelector("span.amount")!.InnerHtml, Page = $"pg.{currentPage}"
+                }));
 
-            logRows.Add(logRow);
+            logRows.RemoveAt(0);
         }
-
-        logRows.RemoveAt(0);
 
         return logRows;
     }
