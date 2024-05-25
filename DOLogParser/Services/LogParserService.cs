@@ -52,7 +52,7 @@ public class LogParserService
 
                 return await GetFormattedHistoryData(htmlPage, currentPage);
             default:
-                return new List<LogRow>() { new LogRow() { Description = "Не Найдено" } };
+                return new List<LogRow>() { new() { Description = "Не Найдено" } };
         }
     }
 

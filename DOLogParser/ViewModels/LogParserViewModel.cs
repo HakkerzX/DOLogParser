@@ -69,7 +69,7 @@ public class LogParserViewModel : ViewModelBase
 
     private async void SearchInLogs()
     {
-        var userSettings = new UserSettings(SelectedServer, DoSID);
+        var userSettings = new UserSettings(DoSID, SelectedServer);
         var parserSettings = new ParserSettings(userSettings, LogType);
 
         var logParser = new LogParserService(parserSettings);
@@ -87,11 +87,15 @@ public class LogParserViewModel : ViewModelBase
                 Thread.Sleep(1000);
             }
 
-            MatchedLogRows.Add(new LogRow()
+            else
             {
-                Description = "Не найдено"
-            });
-            return;
+                MatchedLogRows.Add(new LogRow()
+                {
+                    Description = "Не найдено"
+                });
+                return;
+            }
+            
         }
     }
 
@@ -108,7 +112,7 @@ public class LogParserViewModel : ViewModelBase
         BalanceIsChecked = true;
         HistoryIsChecked = false;
 
-        LogType = LogType.History;
+        LogType = LogType.Balance;
     }
 
     public ObservableCollection<LogRow> MatchedLogRows { get; }
