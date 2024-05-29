@@ -15,14 +15,16 @@ namespace DOLogParser.ViewModels;
 
 public class LogParserViewModel : ViewModelBase
 {
-    private string _selectedServer = String.Empty;
-    private string _doSid = String.Empty;
+    private string _selectedServer;
+    private string _doSid;
 
     private string _firstPage;
     private string _lastPage;
 
     private bool _historyIsChecked;
     private bool _balanceIsChecked = true;
+
+    private string _searchText;
 
     private LogType _logType;
 
@@ -31,9 +33,10 @@ public class LogParserViewModel : ViewModelBase
     {
         MatchedLogRows = new ObservableCollection<LogRow>();
 
-        _logType = LogType.Balance;
-        _firstPage = "1";
-        _lastPage = "1";
+        LogType = LogType.Balance;
+        FirstPage = "1";
+        LastPage = "1";
+        SearchText = "";
 
         this.WhenAnyValue(x => x.FirstPage)
             .Subscribe(text =>
@@ -58,8 +61,8 @@ public class LogParserViewModel : ViewModelBase
             x => !string.IsNullOrWhiteSpace(x));
         SearchCommand = ReactiveCommand.CreateFromTask(async () => { await Task.Run(SearchInLogs); }
             , isValidObservable);
-        SelectHistoryCommand = ReactiveCommand.Create(() => { SelectHistory(); });
-        SelectBalanceCommand = ReactiveCommand.Create(() => { SelectBalance(); });
+        SelectHistoryCommand = ReactiveCommand.Create(SelectHistory);
+        SelectBalanceCommand = ReactiveCommand.Create(SelectBalance);
     }
 
     public ReactiveCommand<Unit, Unit> SearchCommand { get; }
@@ -80,7 +83,7 @@ public class LogParserViewModel : ViewModelBase
 
             if (logs.Count > 1)
             {
-                var result = logs.Where(x => x.Description.Contains(""));
+                var result = logs.Where(x => x.Description.Contains(SearchText));
 
                 MatchedLogRows.Add(result);
 
@@ -95,7 +98,6 @@ public class LogParserViewModel : ViewModelBase
                 });
                 return;
             }
-            
         }
     }
 
@@ -159,5 +161,11 @@ public class LogParserViewModel : ViewModelBase
     {
         get => _logType;
         private set => this.RaiseAndSetIfChanged(ref _logType, value);
+    }
+
+    public string SearchText
+    {
+        get => _searchText;
+        set => this.RaiseAndSetIfChanged(ref _searchText, value);
     }
 }

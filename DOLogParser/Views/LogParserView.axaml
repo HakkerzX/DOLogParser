@@ -47,7 +47,8 @@
                   Grid.Column="0" Grid.Row="1">
                 <TextBox Margin="0  5 0 5"
                          Grid.Column="0"
-                         Watermark="Search..." />
+                         Watermark="Search..."
+                         Text="{Binding SearchText}"/>
                 <!-- Переключатель области поиска -->
                 <ToggleButton Grid.Column="1"
                               Margin="0 5 0 5"
