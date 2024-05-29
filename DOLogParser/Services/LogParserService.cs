@@ -23,12 +23,12 @@ public class LogParserService
         _logType = parserSettings.LogType;
 
         _balanceLogUrl = $"https://{_server}.darkorbit.com/indexInternal.es?action=internalBalance&orderBy=&view=&dps=";
-        _historyLogUrl = String.Empty;
+        _historyLogUrl = $"https://{_server}.darkorbit.com/indexInternal.es?action=internalHistory&orderBy=&view=&dps=";
     }
 
     private string? _server;
     private string _doSid;
-    private int _pageNumber;
+
     private LogType _logType;
 
     private string _balanceLogUrl;
@@ -75,12 +75,12 @@ public class LogParserService
 
     private async Task<List<LogRow>> GetFormattedBalanceData(string htmlPage, int currentPage)
     {
+        List<LogRow> logRows = new();
+
         IBrowsingContext context = BrowsingContext.New(Configuration.Default);
         IDocument document = await context.OpenAsync(req => req.Content(htmlPage));
 
         IHtmlCollection<IElement> balanceRows = document.QuerySelectorAll("li.balance_item");
-
-        List<LogRow> logRows = new();
 
         if (balanceRows.Length > 0)
         {
@@ -89,7 +89,8 @@ public class LogParserService
                 {
                     Date = row.QuerySelector("span.date")!.InnerHtml,
                     Description = row.QuerySelector("span.description")!.InnerHtml,
-                    Amount = row.QuerySelector("span.amount")!.InnerHtml, Page = $"pg.{currentPage}"
+                    Amount = row.QuerySelector("span.amount")!.InnerHtml,
+                    Page = $"pg.{currentPage}"
                 }));
 
             logRows.RemoveAt(0);
@@ -100,6 +101,34 @@ public class LogParserService
 
     private async Task<List<LogRow>> GetFormattedHistoryData(string htmlPage, int currentPage)
     {
-        return new List<LogRow>();
+        List<LogRow> logRows = new();
+
+        IBrowsingContext context = BrowsingContext.New(Configuration.Default);
+        IDocument document = await context.OpenAsync(req => req.Content(htmlPage));
+
+        IElement? historyTable = document.QuerySelector("table.fliess11px-grey");
+
+        var historyRows = historyTable?.QuerySelectorAll("tr");
+
+        if (historyRows != null && historyRows.Length > 0)
+        {
+            foreach (var row in historyRows)
+            {
+                var elements = row.Children.Where(x => !x.InnerHtml.Contains("<img"));
+                if (elements.Any())
+                {
+                    logRows.Add(new LogRow()
+                    {
+                        Date = row.FirstElementChild.InnerHtml,
+                        Description = row.LastElementChild.InnerHtml,
+                        Page = $"pg.{currentPage}"
+                    });
+                
+                }
+            }
+            logRows.RemoveAt(0);
+        }
+        
+        return logRows;
     }
 }
