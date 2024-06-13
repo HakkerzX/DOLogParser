@@ -28,6 +28,9 @@ public class LogParserViewModel : ViewModelBase
 
     private LogType _logType;
 
+    private bool _isBusy;
+    private int _currentPage;
+
 
     public LogParserViewModel()
     {
@@ -37,6 +40,8 @@ public class LogParserViewModel : ViewModelBase
         FirstPage = "1";
         LastPage = "1";
         SearchText = "";
+
+        IsBusy = false;
 
         this.WhenAnyValue(x => x.FirstPage)
             .Subscribe(text =>
@@ -59,7 +64,11 @@ public class LogParserViewModel : ViewModelBase
         var isValidObservable = this.WhenAnyValue(
             x => x.DoSID,
             x => !string.IsNullOrWhiteSpace(x));
-        SearchCommand = ReactiveCommand.CreateFromTask(async () => { await Task.Run(SearchInLogs); }
+        SearchCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                IsBusy = true;
+                await Task.Run(SearchInLogs);
+            }
             , isValidObservable);
         SelectHistoryCommand = ReactiveCommand.Create(SelectHistory);
         SelectBalanceCommand = ReactiveCommand.Create(SelectBalance);
@@ -81,12 +90,13 @@ public class LogParserViewModel : ViewModelBase
         {
             var logs = await logParser.GetLogsByPage(currentPage);
 
+
             if (logs.Count > 1)
             {
                 var result = logs.Where(x => x.Description.Contains(SearchText));
 
                 MatchedLogRows.Add(result);
-
+                CurrentPage = currentPage;
                 Thread.Sleep(1000);
             }
 
@@ -96,9 +106,13 @@ public class LogParserViewModel : ViewModelBase
                 {
                     Description = "Не найдено"
                 });
+
+                IsBusy = false;
                 return;
             }
         }
+
+        IsBusy = false;
     }
 
     private void SelectHistory()
@@ -167,5 +181,18 @@ public class LogParserViewModel : ViewModelBase
     {
         get => _searchText;
         set => this.RaiseAndSetIfChanged(ref _searchText, value);
+    }
+
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => this.RaiseAndSetIfChanged(ref _isBusy, value);
+    }
+
+    public int CurrentPage
+    {
+        get => _currentPage;
+        set => this.RaiseAndSetIfChanged(ref _currentPage, value);
     }
 }

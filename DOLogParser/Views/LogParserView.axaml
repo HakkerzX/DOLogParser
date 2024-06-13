@@ -48,7 +48,7 @@
                 <TextBox Margin="0  5 0 5"
                          Grid.Column="0"
                          Watermark="Search..."
-                         Text="{Binding SearchText}"/>
+                         Text="{Binding SearchText}" />
                 <!-- Переключатель области поиска -->
                 <ToggleButton Grid.Column="1"
                               Margin="0 5 0 5"
@@ -72,7 +72,7 @@
             </Button>
         </Grid>
 
-        <Grid RowDefinitions="*,0.01*" VerticalAlignment="Stretch">
+        <Grid RowDefinitions="*,0.1*" VerticalAlignment="Stretch">
             <ListBox ItemsSource="{Binding MatchedLogRows}"
                      Margin="0 5 0 0"
                      Background="Transparent"
@@ -93,7 +93,13 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <ProgressBar Grid.Row="1" />
+            <ProgressBar Grid.Row="1"
+                         Minimum="0"
+                         Maximum="{Binding LastPage}"
+                         Value="{Binding CurrentPage}"
+                         ShowProgressText="True"
+                         ProgressTextFormat="{}{0}/{3} Log pages ({1:0}%)"
+                         IsVisible="{Binding IsBusy}" />
         </Grid>
     </DockPanel>
 </UserControl>
